@@ -1,45 +1,9 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import productDress from "@/assets/product-dress.jpg";
-import productSweater from "@/assets/product-sweater.jpg";
-import productBeach from "@/assets/product-beach.jpg";
-import productAccessories from "@/assets/product-accessories.jpg";
+import { products } from "@/data/products";
 
-const products = [
-  {
-    id: 1,
-    name: "Ivory Lace Maxi Dress",
-    price: 285,
-    image: productDress,
-    category: "Dresses",
-    isNew: true,
-  },
-  {
-    id: 2,
-    name: "Terracotta Cable Sweater",
-    price: 195,
-    image: productSweater,
-    category: "Sweaters",
-    isNew: true,
-  },
-  {
-    id: 3,
-    name: "Coastal Cover-Up Set",
-    price: 165,
-    image: productBeach,
-    category: "Beach Wear",
-    isNew: false,
-  },
-  {
-    id: 4,
-    name: "Sage Macramé Bag",
-    price: 125,
-    image: productAccessories,
-    category: "Accessories",
-    isNew: false,
-  },
-];
+const featuredProducts = products.slice(0, 4);
 
 const FeaturedProducts = () => {
   return (
@@ -62,7 +26,7 @@ const FeaturedProducts = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product, index) => (
+          {featuredProducts.map((product, index) => (
             <motion.article
               key={product.id}
               initial={{ opacity: 0, y: 40 }}
@@ -92,7 +56,7 @@ const FeaturedProducts = () => {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground tracking-widest uppercase mb-1">
-                    {product.category}
+                    {product.category.replace("-", " ")}
                   </p>
                   <h3 className="font-serif text-lg mb-1 group-hover:text-primary transition-colors">
                     {product.name}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Filter, Grid3X3, LayoutGrid } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -13,100 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import productDress from "@/assets/product-dress.jpg";
-import productSweater from "@/assets/product-sweater.jpg";
-import productBeach from "@/assets/product-beach.jpg";
-import productAccessories from "@/assets/product-accessories.jpg";
-import productSet from "@/assets/product-set.jpg";
-import productShirt from "@/assets/product-shirt.jpg";
-import productJacket from "@/assets/product-jacket.jpg";
-import heroImage from "@/assets/hero-crochet.jpg";
-
-const allProducts = [
-  {
-    id: 1,
-    name: "Ivory Lace Maxi Dress",
-    price: 285,
-    image: productDress,
-    category: "dresses",
-    gender: "women",
-    isNew: true,
-  },
-  {
-    id: 2,
-    name: "Terracotta Cable Sweater",
-    price: 195,
-    image: productSweater,
-    category: "sweaters",
-    gender: "unisex",
-    isNew: true,
-  },
-  {
-    id: 3,
-    name: "Coastal Cover-Up Set",
-    price: 165,
-    image: productBeach,
-    category: "beach-wear",
-    gender: "women",
-    isNew: false,
-  },
-  {
-    id: 4,
-    name: "Sage Macramé Bag",
-    price: 125,
-    image: productAccessories,
-    category: "accessories",
-    gender: "unisex",
-    isNew: false,
-  },
-  {
-    id: 5,
-    name: "Cream Crochet Set",
-    price: 245,
-    image: productSet,
-    category: "sets",
-    gender: "women",
-    isNew: true,
-  },
-  {
-    id: 6,
-    name: "Navy Textured Shirt",
-    price: 175,
-    image: productShirt,
-    category: "shirts",
-    gender: "men",
-    isNew: false,
-  },
-  {
-    id: 7,
-    name: "Black Lace Cardigan",
-    price: 220,
-    image: productJacket,
-    category: "jackets",
-    gender: "women",
-    isNew: true,
-  },
-  {
-    id: 8,
-    name: "Natural Crochet Midi",
-    price: 265,
-    image: heroImage,
-    category: "dresses",
-    gender: "women",
-    isNew: false,
-  },
-];
-
-const categories = [
-  { value: "all", label: "All Products" },
-  { value: "dresses", label: "Dresses" },
-  { value: "sweaters", label: "Sweaters" },
-  { value: "sets", label: "Sets" },
-  { value: "beach-wear", label: "Beach Wear" },
-  { value: "accessories", label: "Accessories" },
-  { value: "shirts", label: "Shirts" },
-  { value: "jackets", label: "Jackets" },
-];
+import { products, categories } from "@/data/products";
 
 const Shop = () => {
   const { category: urlCategory } = useParams();
@@ -114,7 +21,7 @@ const Shop = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [gridCols, setGridCols] = useState<3 | 4>(4);
 
-  const filteredProducts = allProducts.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     if (selectedCategory === "all") return true;
     return product.category === selectedCategory;
   });
@@ -233,7 +140,7 @@ const Shop = () => {
                   transition={{ duration: 0.5, delay: index * 0.05 }}
                   className="group"
                 >
-                  <a href={`/shop/product/${product.id}`} className="block">
+                  <Link to={`/shop/product/${product.id}`} className="block">
                     <div className="relative overflow-hidden aspect-[3/4] mb-4 bg-muted">
                       <img
                         src={product.image}
@@ -261,7 +168,7 @@ const Shop = () => {
                       </h3>
                       <p className="text-muted-foreground">${product.price}</p>
                     </div>
-                  </a>
+                  </Link>
                 </motion.article>
               ))}
             </div>
