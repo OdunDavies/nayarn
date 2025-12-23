@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingBag, Search, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Menu, X, Search, User } from "lucide-react";
+import CartDrawer from "@/components/cart/CartDrawer";
 
 const navLinks = [
   { name: "Shop", href: "/shop" },
@@ -67,12 +67,7 @@ const Header = () => {
               <button className="hidden sm:block p-2 hover:opacity-70 transition-opacity" aria-label="Account">
                 <User className="h-5 w-5" />
               </button>
-              <button className="p-2 hover:opacity-70 transition-opacity relative" aria-label="Cart">
-                <ShoppingBag className="h-5 w-5" />
-                <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                  0
-                </span>
-              </button>
+              <CartDrawer />
             </div>
           </div>
         </div>
