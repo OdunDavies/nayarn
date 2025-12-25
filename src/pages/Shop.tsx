@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
-import { Filter, Grid3X3, LayoutGrid } from "lucide-react";
+import { Filter, Grid3X3, LayoutGrid, Package, Loader2 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { products, categories } from "@/data/products";
+import { useShopProducts, useShopCollections } from "@/hooks/useShopData";
 
 const Shop = () => {
   const { category: urlCategory } = useParams();
@@ -21,10 +21,19 @@ const Shop = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [gridCols, setGridCols] = useState<3 | 4>(4);
 
-  const filteredProducts = products.filter((product) => {
+  const { data: products, isLoading: productsLoading } = useShopProducts();
+  const { data: collections } = useShopCollections();
+
+  // Build categories from collections
+  const categories = [
+    { value: "all", label: "All Products" },
+    ...(collections?.map((c) => ({ value: c.slug, label: c.name })) || []),
+  ];
+
+  const filteredProducts = products?.filter((product) => {
     if (selectedCategory === "all") return true;
     return product.category === selectedCategory;
-  });
+  }) || [];
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
@@ -34,7 +43,7 @@ const Shop = () => {
         return b.price - a.price;
       case "newest":
       default:
-        return b.isNew ? 1 : -1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     }
   });
 
@@ -126,56 +135,68 @@ const Shop = () => {
               </div>
             </div>
 
-            {/* Product Grid */}
-            <div
-              className={`grid grid-cols-1 sm:grid-cols-2 ${
-                gridCols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
-              } gap-8`}
-            >
-              {sortedProducts.map((product, index) => (
-                <motion.article
-                  key={product.id}
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                  className="group"
-                >
-                  <Link to={`/shop/product/${product.id}`} className="block">
-                    <div className="relative overflow-hidden aspect-[3/4] mb-4 bg-muted">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      {product.isNew && (
-                        <span className="absolute top-4 left-4 bg-foreground text-background text-[10px] tracking-widest uppercase px-3 py-1">
-                          New
-                        </span>
-                      )}
-                      <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-all duration-500" />
-                      <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                        <Button variant="luxury" className="w-full" size="sm">
-                          Quick Add
-                        </Button>
+            {/* Loading State */}
+            {productsLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : sortedProducts.length > 0 ? (
+              /* Product Grid */
+              <div
+                className={`grid grid-cols-1 sm:grid-cols-2 ${
+                  gridCols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
+                } gap-8`}
+              >
+                {sortedProducts.map((product, index) => (
+                  <motion.article
+                    key={product.id}
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                    className="group"
+                  >
+                    <Link to={`/shop/product/${product.id}`} className="block">
+                      <div className="relative overflow-hidden aspect-[3/4] mb-4 bg-muted">
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                            <Package className="h-12 w-12" />
+                          </div>
+                        )}
+                        {product.isNew && (
+                          <span className="absolute top-4 left-4 bg-foreground text-background text-[10px] tracking-widest uppercase px-3 py-1">
+                            New
+                          </span>
+                        )}
+                        <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/5 transition-all duration-500" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                          <Button variant="luxury" className="w-full" size="sm">
+                            View Product
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground tracking-widest uppercase mb-1">
-                        {product.category.replace("-", " ")}
-                      </p>
-                      <h3 className="font-serif text-lg mb-1 group-hover:text-primary transition-colors">
-                        {product.name}
-                      </h3>
-                      <p className="text-muted-foreground">${product.price}</p>
-                    </div>
-                  </Link>
-                </motion.article>
-              ))}
-            </div>
-
-            {/* Empty State */}
-            {sortedProducts.length === 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground tracking-widest uppercase mb-1">
+                          {product.category.replace("-", " ")}
+                        </p>
+                        <h3 className="font-serif text-lg mb-1 group-hover:text-primary transition-colors">
+                          {product.name}
+                        </h3>
+                        <p className="text-muted-foreground">${product.price}</p>
+                      </div>
+                    </Link>
+                  </motion.article>
+                ))}
+              </div>
+            ) : (
+              /* Empty State */
               <div className="text-center py-20">
+                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-muted-foreground mb-4">No products found in this category.</p>
                 <Button variant="luxury-outline" onClick={() => setSelectedCategory("all")}>
                   View All Products
