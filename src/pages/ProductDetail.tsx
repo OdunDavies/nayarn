@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Minus, Plus, Ruler, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Minus, Plus, Ruler, Check, Loader2, Package } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { getProductById, products } from "@/data/products";
+import { useShopProduct, useShopProducts } from "@/hooks/useShopData";
 import { useCart } from "@/context/CartContext";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const product = getProductById(Number(id));
+  const { data: product, isLoading, error } = useShopProduct(id || "");
+  const { data: allProducts } = useShopProducts();
   const { addToCart } = useCart();
 
   const [selectedImage, setSelectedImage] = useState(0);
@@ -33,7 +34,19 @@ const ProductDetail = () => {
     length: "",
   });
 
-  if (!product) {
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error || !product) {
     return (
       <>
         <Header />
@@ -50,12 +63,14 @@ const ProductDetail = () => {
     );
   }
 
+  const productImages = product.images.length > 0 ? product.images : [product.image].filter(Boolean);
+
   const handlePrevImage = () => {
-    setSelectedImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+    setSelectedImage((prev) => (prev === 0 ? productImages.length - 1 : prev - 1));
   };
 
   const handleNextImage = () => {
-    setSelectedImage((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+    setSelectedImage((prev) => (prev === productImages.length - 1 ? 0 : prev + 1));
   };
 
   const handleAddToCart = () => {
@@ -73,9 +88,9 @@ const ProductDetail = () => {
     }, quantity);
   };
 
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const relatedProducts = allProducts
+    ?.filter((p) => p.category === product.category && p.id !== product.id)
+    .slice(0, 4) || [];
 
   return (
     <>
@@ -83,7 +98,7 @@ const ProductDetail = () => {
         <title>{product.name} | NaYarn - Luxury Handmade Crochet Fashion</title>
         <meta
           name="description"
-          content={product.description}
+          content={product.description || `${product.name} - Handcrafted crochet fashion by NaYarn`}
         />
       </Helmet>
 
@@ -114,34 +129,44 @@ const ProductDetail = () => {
               >
                 {/* Main Image */}
                 <div className="relative aspect-[3/4] bg-muted overflow-hidden">
-                  <AnimatePresence mode="wait">
-                    <motion.img
-                      key={selectedImage}
-                      src={product.images[selectedImage]}
-                      alt={`${product.name} - View ${selectedImage + 1}`}
-                      className="w-full h-full object-cover"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </AnimatePresence>
+                  {productImages.length > 0 && productImages[0] ? (
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={selectedImage}
+                        src={productImages[selectedImage]}
+                        alt={`${product.name} - View ${selectedImage + 1}`}
+                        className="w-full h-full object-cover"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </AnimatePresence>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                      <Package className="h-20 w-20" />
+                    </div>
+                  )}
                   
                   {/* Navigation Arrows */}
-                  <button
-                    onClick={handlePrevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-                    aria-label="Previous image"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={handleNextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-                    aria-label="Next image"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
+                  {productImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={handlePrevImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={handleNextImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
 
                   {/* New Badge */}
                   {product.isNew && (
@@ -152,25 +177,27 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Thumbnail Gallery */}
-                <div className="flex gap-3">
-                  {product.images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedImage(idx)}
-                      className={`relative w-20 h-24 overflow-hidden transition-all ${
-                        selectedImage === idx
-                          ? "ring-2 ring-foreground"
-                          : "opacity-60 hover:opacity-100"
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt={`${product.name} thumbnail ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
+                {productImages.length > 1 && (
+                  <div className="flex gap-3">
+                    {productImages.map((img, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedImage(idx)}
+                        className={`relative w-20 h-24 overflow-hidden transition-all ${
+                          selectedImage === idx
+                            ? "ring-2 ring-foreground"
+                            : "opacity-60 hover:opacity-100"
+                        }`}
+                      >
+                        <img
+                          src={img}
+                          alt={`${product.name} thumbnail ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </motion.div>
 
               {/* Product Info */}
@@ -187,37 +214,41 @@ const ProductDetail = () => {
                   {product.name}
                 </h1>
                 <p className="text-2xl font-serif mb-6">${product.price}</p>
-                <p className="text-muted-foreground leading-relaxed mb-8">
-                  {product.description}
-                </p>
+                {product.description && (
+                  <p className="text-muted-foreground leading-relaxed mb-8">
+                    {product.description}
+                  </p>
+                )}
 
                 {/* Size Selection */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <Label className="text-sm font-medium">Select Size</Label>
-                    <Link
-                      to="/size-guide"
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
-                    >
-                      Size Guide
-                    </Link>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    {product.sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`min-w-[3rem] h-12 px-4 border text-sm transition-all ${
-                          selectedSize === size
-                            ? "border-foreground bg-foreground text-background"
-                            : "border-border hover:border-foreground"
-                        }`}
+                {product.sizes.length > 0 && (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-sm font-medium">Select Size</Label>
+                      <Link
+                        to="/size-guide"
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
                       >
-                        {size}
-                      </button>
-                    ))}
+                        Size Guide
+                      </Link>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {product.sizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                          className={`min-w-[3rem] h-12 px-4 border text-sm transition-all ${
+                            selectedSize === size
+                              ? "border-foreground bg-foreground text-background"
+                              : "border-border hover:border-foreground"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Custom Measurements Toggle */}
                 <div className="mb-6">
@@ -339,28 +370,13 @@ const ProductDetail = () => {
                   size="xl"
                   className="w-full mb-4"
                   onClick={handleAddToCart}
-                  disabled={!selectedSize}
+                  disabled={product.sizes.length > 0 && !selectedSize}
                 >
-                  {selectedSize ? "Add to Cart" : "Select a Size"}
+                  {product.sizes.length > 0 && !selectedSize ? "Select a Size" : "Add to Cart"}
                 </Button>
 
                 {/* Product Details Accordion */}
                 <Accordion type="single" collapsible className="border-t border-border">
-                  <AccordionItem value="details">
-                    <AccordionTrigger className="text-sm font-medium py-4">
-                      Product Details
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <ul className="space-y-2 text-sm text-muted-foreground">
-                        {product.details.map((detail, idx) => (
-                          <li key={idx} className="flex items-start gap-2">
-                            <span className="w-1 h-1 rounded-full bg-foreground mt-2 shrink-0" />
-                            {detail}
-                          </li>
-                        ))}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
                   <AccordionItem value="shipping">
                     <AccordionTrigger className="text-sm font-medium py-4">
                       Shipping & Returns
@@ -419,16 +435,19 @@ const ProductDetail = () => {
                     className="group"
                   >
                     <Link to={`/shop/product/${item.id}`} className="block">
-                      <div className="relative overflow-hidden aspect-[3/4] mb-3 bg-muted">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
+                      <div className="relative overflow-hidden aspect-[3/4] mb-4 bg-muted">
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                            <Package className="h-8 w-8" />
+                          </div>
+                        )}
                       </div>
-                      <p className="text-xs text-muted-foreground tracking-widest uppercase mb-1">
-                        {item.category.replace("-", " ")}
-                      </p>
                       <h3 className="font-serif text-base group-hover:text-primary transition-colors">
                         {item.name}
                       </h3>

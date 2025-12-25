@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback } from "react";
 import { toast } from "sonner";
 
 export interface CartItem {
-  productId: number;
+  productId: string | number;
   name: string;
   price: number;
   image: string;
@@ -19,8 +19,8 @@ export interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
-  removeFromCart: (productId: number, size: string) => void;
-  updateQuantity: (productId: number, size: string, quantity: number) => void;
+  removeFromCart: (productId: string | number, size: string) => void;
+  updateQuantity: (productId: string | number, size: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -49,12 +49,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
-  const removeFromCart = useCallback((productId: number, size: string) => {
+  const removeFromCart = useCallback((productId: string | number, size: string) => {
     setItems((prev) => prev.filter((i) => !(i.productId === productId && i.size === size)));
     toast.success("Item removed from cart");
   }, []);
 
-  const updateQuantity = useCallback((productId: number, size: string, quantity: number) => {
+  const updateQuantity = useCallback((productId: string | number, size: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId, size);
       return;
