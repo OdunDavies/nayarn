@@ -19,6 +19,13 @@ import Journal from "./pages/Journal";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminProductForm from "./pages/admin/AdminProductForm";
+import AdminCollections from "./pages/admin/AdminCollections";
+import AdminCollectionForm from "./pages/admin/AdminCollectionForm";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +53,17 @@ const App = () => (
               <Route path="/journal" element={<Journal />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              {/* Admin Routes */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="products/new" element={<AdminProductForm />} />
+                <Route path="products/:id" element={<AdminProductForm />} />
+                <Route path="collections" element={<AdminCollections />} />
+                <Route path="collections/new" element={<AdminCollectionForm />} />
+                <Route path="collections/:id" element={<AdminCollectionForm />} />
+              </Route>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
