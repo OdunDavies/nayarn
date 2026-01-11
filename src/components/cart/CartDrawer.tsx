@@ -133,9 +133,13 @@ const CartDrawer = () => {
               <p className="text-xs text-muted-foreground">
                 Shipping and taxes calculated at checkout
               </p>
-              <Button className="w-full" size="lg">
-                Proceed to Checkout
-              </Button>
+              <SheetClose asChild>
+                <Link to="/checkout">
+                  <Button className="w-full" size="lg">
+                    Proceed to Checkout
+                  </Button>
+                </Link>
+              </SheetClose>
               <SheetClose asChild>
                 <Link to="/shop" className="block">
                   <Button variant="outline" className="w-full">
