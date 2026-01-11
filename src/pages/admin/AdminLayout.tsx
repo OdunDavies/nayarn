@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Package,
   FolderOpen,
+  ShoppingBag,
   LogOut,
   Loader2,
   ExternalLink,
@@ -42,6 +43,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
     { href: "/admin/products", icon: Package, label: "Products" },
     { href: "/admin/collections", icon: FolderOpen, label: "Collections" },
   ];
