@@ -54,9 +54,32 @@ export const useUpdateOrderStatus = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Order status updated");
+
+      // Send email notification (don't block on this)
+      const statusLabel = ORDER_STATUSES.find((s) => s.value === data.status)?.label || data.status;
+      
+      try {
+        const response = await supabase.functions.invoke("send-order-status-update", {
+          body: {
+            orderId: data.id,
+            customerEmail: data.customer_email,
+            customerName: data.customer_name,
+            status: data.status,
+            statusLabel,
+          },
+        });
+        
+        if (response.error) {
+          console.error("Failed to send status email:", response.error);
+        } else {
+          toast.success("Customer notified via email");
+        }
+      } catch (emailError) {
+        console.error("Error sending status email:", emailError);
+      }
     },
     onError: (error) => {
       toast.error("Failed to update order status");

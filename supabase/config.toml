@@ -2,3 +2,6 @@ project_id = "libxssmrmvlxzzuzxluq"
 
 [functions.send-order-confirmation]
 verify_jwt = false
+
+[functions.send-order-status-update]
+verify_jwt = false
