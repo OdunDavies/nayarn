@@ -64,9 +64,9 @@ const Header = () => {
               <button className="p-2 hover:opacity-70 transition-opacity" aria-label="Search">
                 <Search className="h-5 w-5" />
               </button>
-              <button className="hidden sm:block p-2 hover:opacity-70 transition-opacity" aria-label="Account">
+              <Link to="/admin/login" className="hidden sm:block p-2 hover:opacity-70 transition-opacity" aria-label="Account">
                 <User className="h-5 w-5" />
-              </button>
+              </Link>
               <CartDrawer />
             </div>
           </div>
@@ -108,7 +108,7 @@ const Header = () => {
                   className="pt-6 border-t border-border"
                 >
                   <Link
-                    to="/account"
+                    to="/admin/login"
                     className="text-sm tracking-widest uppercase"
                     onClick={() => setIsMenuOpen(false)}
                   >
